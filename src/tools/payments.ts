@@ -54,6 +54,7 @@ export function registerPaymentTools(server: McpServer, client: WorkaduClient): 
       comments: z.string().optional().describe('Comments for the payment'),
       order_id: z.number().int().positive().optional().describe('Associated order/booking ID'),
       notes: z.string().optional().describe('Internal notes for the payment'),
+      invoice_ids: z.string().optional().describe('Comma-separated invoice IDs to link to this payment/refund, e.g. 123 or 123,456; choose the appropriate payment/refund series'),
     },
     async (params) => {
       try {
@@ -68,6 +69,12 @@ export function registerPaymentTools(server: McpServer, client: WorkaduClient): 
         if (params.comments !== undefined) body.comments = params.comments;
         if (params.order_id !== undefined) body.order_id = params.order_id;
         if (params.notes !== undefined) body.notes = params.notes;
+        if (params.invoice_ids !== undefined) {
+          body.invoice_ids = params.invoice_ids;
+          // The invoice-linked REST flow reads these names for amount and series.
+          body.deposit = params.amount;
+          body.series = params.series_id;
+        }
 
         const result = await client.post('/payments', body);
         return {

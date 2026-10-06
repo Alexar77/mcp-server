@@ -154,6 +154,23 @@ npm start
 | `list_payments` | List payments |
 | `create_payment` | Create a new payment |
 
+Invoice creation and update accept optional `payment_type`: the Workadu payment
+**series ID** returned by `list_series`, rather than an AADE payment method code.
+`create_invoice_with_lines` also accepts these optional inputs:
+
+- `related_invoice_id`: a string of comma-separated original invoice IDs, e.g. `"123"` or `"123,456"`.
+- `tags`: an array of tag names or an array of existing tag IDs.
+- `referrer_unique_id`: an external reference for the REST API's duplicate detection.
+
+The tool keeps its existing top-level MCP inputs and sends these fields inside
+the REST API's `invoice` object, with `customer: { id: customer_id }` and `lines`.
+It maps `currency_iso` to `invoice.currency`, line `unit_price` to `amount`, and
+line `discount_percent` to `line_discount`.
+
+`create_payment` accepts optional `invoice_ids` as a comma-separated string.
+For linked payments/refunds, it also sends `amount` as REST `deposit` and
+`series_id` as REST `series`; choose the appropriate payment or refund series.
+
 ### Assets (DCL)
 | Tool | Description |
 |------|-------------|
@@ -184,6 +201,7 @@ npm run lint
 
 # Build
 npm run build
+
 ```
 
 ## Architecture
