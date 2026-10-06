@@ -61,19 +61,16 @@ export function registerPaymentTools(server: McpServer, client: WorkaduClient): 
         const body: Record<string, unknown> = {
           issue_date: params.issue_date,
           customer_id: params.customer_id,
-          series_id: params.series_id,
-          amount: params.amount,
+          series: params.series_id,
+          deposit: params.amount,
           currency_iso: params.currency_iso,
         };
         if (params.currency_rate !== undefined) body.currency_rate = params.currency_rate;
-        if (params.comments !== undefined) body.comments = params.comments;
+        if (params.comments !== undefined) body.comment = params.comments;
         if (params.order_id !== undefined) body.order_id = params.order_id;
         if (params.notes !== undefined) body.notes = params.notes;
         if (params.invoice_ids !== undefined) {
           body.invoice_ids = params.invoice_ids;
-          // The invoice-linked REST flow reads these names for amount and series.
-          body.deposit = params.amount;
-          body.series = params.series_id;
         }
 
         const result = await client.post('/payments', body);

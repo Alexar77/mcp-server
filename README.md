@@ -162,14 +162,16 @@ Invoice creation and update accept optional `payment_type`: the Workadu payment
 - `tags`: an array of tag names or an array of existing tag IDs.
 - `referrer_unique_id`: an external reference for the REST API's duplicate detection.
 
-The tool keeps its existing top-level MCP inputs and sends these fields inside
-the REST API's `invoice` object, with `customer: { id: customer_id }` and `lines`.
-It maps `currency_iso` to `invoice.currency`, line `unit_price` to `amount`, and
-line `discount_percent` to `line_discount`.
+The tool keeps its existing request structure and line field names, adding
+the new optional invoice fields alongside the existing inputs.
 
 `create_payment` accepts optional `invoice_ids` as a comma-separated string.
-For linked payments/refunds, it also sends `amount` as REST `deposit` and
-`series_id` as REST `series`; choose the appropriate payment or refund series.
+For all payments, it sends `amount` as REST `deposit`, `series_id` as REST
+`series`, and optional `comments` as REST `comment`. Choose the appropriate
+payment or refund series; `invoice_ids` links the payment to those invoices.
+The current REST endpoint assigns the creation date and the company's currency,
+regardless of the supplied `issue_date` and `currency_iso`; backdated payments
+require REST API support.
 
 ### Assets (DCL)
 | Tool | Description |
