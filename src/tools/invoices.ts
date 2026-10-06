@@ -143,29 +143,20 @@ export function registerInvoiceTools(server: McpServer, client: WorkaduClient): 
     },
     async (params) => {
       try {
-        const invoice: Record<string, unknown> = {
+        const body: Record<string, unknown> = {
           issue_date: params.issue_date,
+          customer_id: params.customer_id,
           series_id: params.series_id,
+          lines: params.lines,
         };
-        if (params.payment_type !== undefined) invoice.payment_type = params.payment_type;
-        if (params.related_invoice_id !== undefined) invoice.related_invoice_id = params.related_invoice_id;
-        if (params.tags !== undefined) invoice.tags = params.tags;
-        if (params.referrer_unique_id !== undefined) invoice.referrer_unique_id = params.referrer_unique_id;
-        if (params.includes_vat !== undefined) invoice.includes_vat = params.includes_vat;
-        if (params.currency_iso !== undefined) invoice.currency = params.currency_iso;
-        if (params.notes !== undefined) invoice.notes = params.notes;
-        if (params.admin_notes !== undefined) invoice.admin_notes = params.admin_notes;
-
-        // This endpoint expects nested invoice/customer data and REST line names.
-        const body = {
-          customer: { id: params.customer_id },
-          invoice,
-          lines: params.lines.map(({ unit_price, discount_percent, ...line }) => ({
-            ...line,
-            amount: unit_price,
-            ...(discount_percent !== undefined ? { line_discount: discount_percent } : {}),
-          })),
-        };
+        if (params.payment_type !== undefined) body.payment_type = params.payment_type;
+        if (params.related_invoice_id !== undefined) body.related_invoice_id = params.related_invoice_id;
+        if (params.tags !== undefined) body.tags = params.tags;
+        if (params.referrer_unique_id !== undefined) body.referrer_unique_id = params.referrer_unique_id;
+        if (params.includes_vat !== undefined) body.includes_vat = params.includes_vat;
+        if (params.currency_iso !== undefined) body.currency_iso = params.currency_iso;
+        if (params.notes !== undefined) body.notes = params.notes;
+        if (params.admin_notes !== undefined) body.admin_notes = params.admin_notes;
 
         const result = await client.post('/invoices/create-with-lines', body);
         return {
