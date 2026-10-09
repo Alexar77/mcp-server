@@ -176,8 +176,8 @@ Updating contact tags still requires a REST API change.
 `dispatch_date` (YYYY-MM-DD), and `dispatch_time` (HH:mm:ss). Automatic payment
 and editing/deleting invoice lines still require REST API support.
 
-`publish_invoice` accepts optional `aade_send`, `send`, `branch_id`, and
-`customer_branch_id`. Set `aade_send: true` to explicitly request myDATA
+`publish_invoice` accepts optional `aade_send` and `send`.
+Set `aade_send: true` to explicitly request myDATA
 submission, including for an already VALID invoice. Omitted options remain
 omitted from the REST request. Check the returned `meta.myData` or pending POS
 response; HTTP success alone does not confirm AADE acceptance.

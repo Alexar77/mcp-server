@@ -271,16 +271,12 @@ export function registerInvoiceTools(server: McpServer, client: WorkaduClient): 
       invoice_id: z.number().int().positive().describe('The draft or VALID invoice ID'),
       aade_send: z.boolean().optional().describe('Explicitly request or disable myDATA submission. If omitted, the REST API uses automatic-send settings'),
       send: z.boolean().optional().describe('Whether to send the invoice notification to the customer'),
-      branch_id: z.number().int().positive().optional().describe('Company branch ID for the publish flow'),
-      customer_branch_id: z.number().int().positive().optional().describe('Customer branch ID for the publish flow'),
     },
     async (params) => {
       try {
         const body: Record<string, unknown> = { invoice_id: params.invoice_id };
         if (params.aade_send !== undefined) body.aade_send = params.aade_send;
         if (params.send !== undefined) body.send = params.send;
-        if (params.branch_id !== undefined) body.branch_id = params.branch_id;
-        if (params.customer_branch_id !== undefined) body.customer_branch_id = params.customer_branch_id;
         const result = await client.post('/invoices/publish', body);
         return {
           content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
