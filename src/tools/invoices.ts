@@ -134,29 +134,34 @@ export function registerInvoiceTools(server: McpServer, client: WorkaduClient): 
         unit_price: z.number().describe('Unit price (net or gross depending on includes_vat)'),
         vat_percent: z.number().describe('VAT percentage (e.g. 24 for 24% Greek standard rate)'),
         discount_percent: z.number().optional().describe('Discount percentage (0-100)'),
-        service_id: z.number().int().positive().optional().describe('Optional service/product ID to link'),
       })).min(1).describe('Array of invoice line items (at least one required)'),
       includes_vat: z.boolean().optional().describe('Whether prices include VAT'),
       currency_iso: z.string().optional().describe('ISO 4217 currency code'),
       notes: z.string().optional().describe('Notes visible to customer'),
-      admin_notes: z.string().optional().describe('Internal admin notes'),
     },
     async (params) => {
       try {
-        const body: Record<string, unknown> = {
+        const invoice: Record<string, unknown> = {
           issue_date: params.issue_date,
-          customer_id: params.customer_id,
           series_id: params.series_id,
-          lines: params.lines,
         };
-        if (params.payment_type !== undefined) body.payment_type = params.payment_type;
-        if (params.related_invoice_id !== undefined) body.related_invoice_id = params.related_invoice_id;
-        if (params.tags !== undefined) body.tags = params.tags;
-        if (params.referrer_unique_id !== undefined) body.referrer_unique_id = params.referrer_unique_id;
-        if (params.includes_vat !== undefined) body.includes_vat = params.includes_vat;
-        if (params.currency_iso !== undefined) body.currency_iso = params.currency_iso;
-        if (params.notes !== undefined) body.notes = params.notes;
-        if (params.admin_notes !== undefined) body.admin_notes = params.admin_notes;
+        if (params.payment_type !== undefined) invoice.payment_type = params.payment_type;
+        if (params.related_invoice_id !== undefined) invoice.related_invoice_id = params.related_invoice_id;
+        if (params.tags !== undefined) invoice.tags = params.tags;
+        if (params.referrer_unique_id !== undefined) invoice.referrer_unique_id = params.referrer_unique_id;
+        if (params.includes_vat !== undefined) invoice.includes_vat = params.includes_vat;
+        if (params.currency_iso !== undefined) invoice.currency = params.currency_iso;
+        if (params.notes !== undefined) invoice.notes = params.notes;
+
+        const body = {
+          customer: { id: params.customer_id },
+          invoice,
+          lines: params.lines.map(({ unit_price, discount_percent, ...line }) => ({
+            ...line,
+            amount: unit_price,
+            ...(discount_percent !== undefined ? { line_discount: discount_percent } : {}),
+          })),
+        };
 
         const result = await client.post('/invoices/create-with-lines', body);
         return {
@@ -226,6 +231,7 @@ export function registerInvoiceTools(server: McpServer, client: WorkaduClient): 
       notes: z.string().optional().describe('Updated customer-facing notes'),
       admin_notes: z.string().optional().describe('Updated internal admin notes'),
       due_date: z.string().optional().describe('Payment due date (YYYY-MM-DD)'),
+      tags: z.string().min(1).optional().describe('Complete list of tag names separated by commas. Replaces existing tags; include any tags you want to keep. Clearing all tags is not supported by the REST endpoint.'),
     },
     async (params) => {
       try {

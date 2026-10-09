@@ -162,8 +162,15 @@ Invoice creation and update accept optional `payment_type`: the Workadu payment
 - `tags`: an array of tag names or an array of existing tag IDs.
 - `referrer_unique_id`: an external reference for the REST API's duplicate detection.
 
-The tool keeps its existing request structure and line field names, adding
-the new optional invoice fields alongside the existing inputs.
+The tool sends `customer_id` as `customer.id` and nests invoice fields under
+`invoice`, including `currency_iso` as REST `currency`. Line `unit_price` is
+sent as `amount`, and optional `discount_percent` as `line_discount`.
+This endpoint does not support `service_id` or `admin_notes`.
+
+`update_invoice` accepts optional `tags` as comma-separated tag names. This
+replaces the invoice's tags, so include existing tags that should be kept.
+The REST endpoint does not support clearing all tags with an empty string.
+Updating contact tags still requires a REST API change.
 
 `create_payment` accepts optional `invoice_ids` as a comma-separated string.
 For all payments, it sends `amount` as REST `deposit`, `series_id` as REST
